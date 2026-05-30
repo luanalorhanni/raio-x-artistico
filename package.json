@@ -1,0 +1,10 @@
+{
+  "name": "raio-x-artistico",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Diagnóstico estratégico de carreira artística — formulário + persistência em Neon Postgres.",
+  "type": "module",
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4"
+  }
+}
