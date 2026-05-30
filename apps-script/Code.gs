@@ -2,12 +2,20 @@
 // Raio X Artístico — Webhook do Google Sheets
 // =====================================================
 //
-// Como usar:
-// 1. Crie uma planilha no Google Sheets.
-// 2. Abra Extensões → Apps Script.
-// 3. Apaga o conteúdo padrão e cola TUDO deste arquivo.
-// 4. Troca o SECRET abaixo por algo aleatório (ex: gere em uuidgenerator.net).
-// 5. Salva (Ctrl+S), dá um nome ao projeto.
+// Como usar (2 modos):
+//
+// MODO A - Script bound à planilha (recomendado):
+//   1. Crie a planilha. Em Extensões → Apps Script cola tudo isto.
+//   2. Deixa SHEET_ID = '' (vazio).
+//
+// MODO B - Script standalone (criado em script.google.com):
+//   1. Crie a planilha separadamente.
+//   2. Copia o ID dela: na URL https://docs.google.com/spreadsheets/d/{ESTE_ID}/edit
+//   3. Preenche SHEET_ID com esse ID abaixo.
+//
+// Continuação (ambos modos):
+// 4. Troca o SECRET abaixo por algo aleatório (uuidgenerator.net).
+// 5. Salva (Ctrl+S), dá nome ao projeto.
 // 6. Clica em Deploy → New deployment.
 //    - Type: Web app
 //    - Description: webhook raio-x-artistico
@@ -23,6 +31,20 @@
 
 const SECRET = 'TROCAR_PARA_UMA_STRING_ALEATORIA';
 const SHEET_NAME = 'Respostas';
+// Pra script standalone (criado em script.google.com), preencha o SHEET_ID
+// com o ID da planilha (a parte entre /d/ e /edit na URL).
+// Pra script bound (criado em Extensões → Apps Script dentro da planilha),
+// deixe SHEET_ID = '' e o script usa a planilha onde está vinculado.
+const SHEET_ID = '';
+
+function getSpreadsheet() {
+  if (SHEET_ID) return SpreadsheetApp.openById(SHEET_ID);
+  const active = SpreadsheetApp.getActiveSpreadsheet();
+  if (!active) {
+    throw new Error('Script standalone sem SHEET_ID configurado. Preencha a constante SHEET_ID com o ID da planilha.');
+  }
+  return active;
+}
 
 function doPost(e) {
   try {
@@ -30,7 +52,7 @@ function doPost(e) {
     if (body.secret !== SECRET) {
       return json({ ok: false, error: 'unauthorized' });
     }
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = getSpreadsheet();
     let sheet = ss.getSheetByName(SHEET_NAME);
     if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
 
