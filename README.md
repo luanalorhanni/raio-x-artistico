@@ -2,6 +2,8 @@
 
 Formulário de diagnóstico estratégico de carreira artística. HTML estático + 1 função serverless que persiste em Neon Postgres.
 
+Deploy: Vercel + Neon (sa-east-1).
+
 ## Estrutura
 
 ```
