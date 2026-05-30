@@ -2,7 +2,7 @@ import { neon } from '@neondatabase/serverless';
 import { ALL_FIELDS_IN_ORDER } from '../lib/fields.js';
 import { generateDiagnosticoPDF } from '../lib/pdf.js';
 import { sendDiagnosticoEmail } from '../lib/email.js';
-import { appendRow } from '../lib/sheets.js';
+import { appendRow, isConfigured as sheetsConfigured } from '../lib/sheets.js';
 
 const ALLOWED_FIELDS = ALL_FIELDS_IN_ORDER;
 
@@ -116,12 +116,16 @@ async function runSideEffects({ id, createdAt, data }) {
     }
   }
 
-  try {
-    await appendRow({ id, createdAt, data });
-    result.sheets = { ok: true };
-  } catch (err) {
-    console.error('[submit] append no Sheets falhou:', err);
-    result.sheets = { ok: false, error: err.message };
+  if (sheetsConfigured()) {
+    try {
+      await appendRow({ id, createdAt, data });
+      result.sheets = { ok: true };
+    } catch (err) {
+      console.error('[submit] append no Sheets falhou:', err);
+      result.sheets = { ok: false, error: err.message };
+    }
+  } else {
+    result.sheets = { skipped: true };
   }
 
   return result;
