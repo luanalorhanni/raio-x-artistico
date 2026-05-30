@@ -34,34 +34,26 @@ Provisionado via Vercel Marketplace. `DATABASE_URL` injetada automaticamente. Sc
    - Configura DNS (TXT/MX/DKIM)
    - Define env var `RESEND_FROM` no Vercel, ex: `Raio X Artístico <noreply@feghalli.com>`
 
-### 3. Google Sheets
+### 3. Google Sheets (via Apps Script — sem GCP)
 
-#### 3.1. Criar a planilha
-- Crie uma planilha em sheets.google.com (qualquer nome)
-- Renomeie a primeira aba pra `Respostas`
-- Copie o ID da URL: `https://docs.google.com/spreadsheets/d/{ESTE_ID}/edit`
+A planilha é o próprio "backend" via Apps Script Web App. Não precisa de Google Cloud, service account, nem cartão.
 
-#### 3.2. Criar service account no Google Cloud
-1. https://console.cloud.google.com → cria/seleciona um projeto
-2. **APIs & Services → Library** → habilita **Google Sheets API**
-3. **APIs & Services → Credentials → Create credentials → Service account**
-4. Dá um nome (`raio-x-artistico-sheets`), pula as permissões opcionais
-5. Na service account criada: **Keys → Add key → Create new key → JSON** → baixa o `.json`
-6. Copie o email da service account (algo como `raio-x-...@projeto.iam.gserviceaccount.com`)
-
-#### 3.3. Compartilhar a planilha com a service account
-- Na planilha, clica **Share** → cola o email da service account → permissão **Editor** → Send (sem notificação)
-
-#### 3.4. Configurar env vars no Vercel
-Em *Settings → Environment Variables*:
+1. **Crie a planilha** no Google Sheets (qualquer nome).
+2. **Abre Extensões → Apps Script.** Cola o conteúdo de `apps-script/Code.gs` deste repo.
+3. **Troca o `SECRET`** dentro do código por uma string aleatória (gera em uuidgenerator.net por exemplo).
+4. Salva (Ctrl+S).
+5. **Deploy → New deployment**:
+   - Type: **Web app**
+   - Execute as: **Me**
+   - Who has access: **Anyone**
+   - Clica **Deploy** → autoriza (na tela "app não verificado", clica Advanced → Go to ... → Allow)
+6. Copia a **Web app URL** que aparece (algo como `https://script.google.com/macros/s/AKfyc.../exec`).
+7. **Configura env vars no Vercel** (*Settings → Environment Variables*, marca Production):
 
 | Variável | Valor |
 | --- | --- |
-| `GOOGLE_SHEET_ID` | ID da planilha (passo 3.1) |
-| `GOOGLE_SERVICE_ACCOUNT_JSON` | Conteúdo do JSON inteiro da service account (ou em base64) |
-| `GOOGLE_SHEET_RANGE` | `Respostas!A1` (opcional, esse é o padrão) |
-
-> **Dica:** se o JSON do service account quebrar (escapes de newline na private_key), passe ele em **base64**: `base64 < service-account.json` → cola o resultado.
+| `SHEETS_WEBHOOK_URL` | URL do passo 6 |
+| `SHEETS_WEBHOOK_SECRET` | A string aleatória do passo 3 (mesma do Apps Script) |
 
 ### 4. Variáveis de ambiente (resumo)
 
@@ -71,9 +63,8 @@ Em *Settings → Environment Variables*:
 | `RESEND_API_KEY` | Resend (Marketplace) | Pra email |
 | `RESEND_FROM` | manual | Opcional (default `onboarding@resend.dev`) |
 | `NOTIFY_EMAIL` | manual | Opcional (default `REDACTED_EMAIL`) |
-| `GOOGLE_SHEET_ID` | manual | Pra sheets |
-| `GOOGLE_SERVICE_ACCOUNT_JSON` | manual | Pra sheets |
-| `GOOGLE_SHEET_RANGE` | manual | Opcional |
+| `SHEETS_WEBHOOK_URL` | manual (Apps Script) | Pra sheets |
+| `SHEETS_WEBHOOK_SECRET` | manual | Pra sheets |
 
 Se uma dessas faltar, o submit ainda funciona — só o canal correspondente é pulado (com log de aviso no Vercel).
 
