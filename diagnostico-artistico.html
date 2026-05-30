@@ -559,11 +559,21 @@
 
   .credits-logo {
     display: block;
-    height: 28px;
+    height: 56px;
     width: auto;
-    margin: 0 auto 16px;
-    opacity: 0.85;
+    margin: 0 auto 20px;
+    opacity: 0.9;
     filter: invert(86%) sepia(15%) saturate(700%) hue-rotate(5deg) brightness(95%);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  .credits-logo-link {
+    display: inline-block;
+  }
+
+  .credits-logo-link:hover .credits-logo {
+    opacity: 1;
+    transform: scale(1.04);
   }
 
   .credits-name {
@@ -1484,7 +1494,9 @@
 
   <!-- CRÉDITOS -->
   <footer class="credits">
-    <img src="/favicon.png" alt="Giovanni Feghalli" class="credits-logo">
+    <a href="https://www.instagram.com/giovannifeghalli" target="_blank" rel="noopener" class="credits-logo-link" aria-label="Instagram de Giovanni Feghalli">
+      <img src="/favicon.png" alt="Giovanni Feghalli" class="credits-logo">
+    </a>
     <div class="credits-name">Feito por Giovanni Feghalli</div>
     <div><a href="https://wa.me/5598981235512" target="_blank" rel="noopener">Entre em contato</a></div>
   </footer>
