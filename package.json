@@ -5,6 +5,9 @@
   "description": "Diagnóstico estratégico de carreira artística — formulário + persistência em Neon Postgres.",
   "type": "module",
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4"
+    "@neondatabase/serverless": "^0.10.4",
+    "googleapis": "^144.0.0",
+    "pdfkit": "^0.15.0",
+    "resend": "^4.0.1"
   }
 }

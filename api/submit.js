@@ -1,23 +1,10 @@
 import { neon } from '@neondatabase/serverless';
+import { ALL_FIELDS_IN_ORDER } from '../lib/fields.js';
+import { generateDiagnosticoPDF } from '../lib/pdf.js';
+import { sendDiagnosticoEmail } from '../lib/email.js';
+import { appendRow } from '../lib/sheets.js';
 
-const ALLOWED_FIELDS = [
-  'nome_artistico','nome_completo','idade','cidade_estado','telefone','email',
-  'instagram','tiktok','youtube','spotify',
-  'interesse_musica','tempo_atuacao','maior_conquista','momentos_importantes','maior_desafio','motivacao',
-  'proposito_musica','transmitir_arte','sentimento_publico','como_lembrado','impacto_vidas','definicao_sucesso',
-  'resultados_12m','shows_previstos','meta_seguidores','lancamentos_planejados','visao_3anos','grande_sonho','visao_10anos',
-  'estilo_musical','generos_musicais','influencias','diferencial','personalidade_artistica','frase_publico',
-  'mercado','concorrentes','referencias_carreira','oportunidades_nao_aproveitadas','barreiras',
-  'publico_atual','publico_ideal','faixa_etaria','genero_publico','localizacao_publico','habitos_publico','conexao_musica',
-  'melhor_rede','rede_favorita','publicacoes_semana','calendario_conteudo','conforto_cameras','tipos_conteudo','conteudos_engajamento','conteudos_evita',
-  'total_musicas_lancadas','lancamentos_12m','ouvintes_mensais','musica_melhor_desempenho','playlists_relevantes','estrategia_lancamentos',
-  'shows_ultimos_12m','cache_medio','maior_publico','banda_equipe','show_eventos_maiores','cidades_alcancar','objetivo_shows',
-  'empresario','assessor_imprensa','produtor_musical','designer','videomaker','cuida_redes','decisoes_carreira',
-  'investimento_mensal','investimento_marketing','trafego_pago','patrocinadores','interesse_parcerias',
-  'fonte_renda','fontes_desenvolver','merchandising','licenciamento',
-  'pontos_fortes','pontos_fracos','oportunidades','ameacas',
-  'comprometimento','planejamento_longo_prazo','diferencial_dedicacao','entrevista_5anos',
-];
+const ALLOWED_FIELDS = ALL_FIELDS_IN_ORDER;
 
 const INT_FIELDS = new Set([
   'idade','shows_previstos','publicacoes_semana',
@@ -63,11 +50,13 @@ export default async function handler(req, res) {
 
   const cols = [];
   const vals = [];
+  const cleanedData = {};
   for (const field of ALLOWED_FIELDS) {
     if (!(field in body)) continue;
     const v = INT_FIELDS.has(field) ? toIntOrNull(body[field]) : clean(body[field]);
     cols.push(field);
     vals.push(v);
+    cleanedData[field] = v;
   }
 
   if (cols.length === 0) {
@@ -79,11 +68,61 @@ export default async function handler(req, res) {
   const colList = cols.join(', ');
   const query = `INSERT INTO diagnosticos (${colList}) VALUES (${placeholders}) RETURNING id, created_at`;
 
+  let inserted;
   try {
     const rows = await sql(query, vals);
-    return res.status(200).json({ ok: true, id: rows[0].id, created_at: rows[0].created_at });
+    inserted = rows[0];
   } catch (err) {
-    console.error('INSERT diagnosticos falhou:', err);
+    console.error('[submit] INSERT diagnosticos falhou:', err);
     return res.status(500).json({ error: 'Erro ao salvar diagnóstico', detail: err.message });
   }
+
+  // Pós-INSERT: efeitos colaterais (email, sheets). Falhas aqui NÃO derrubam a resposta —
+  // o Neon é a fonte da verdade; estes são canais secundários de visualização.
+  const sideEffects = await runSideEffects({
+    id: inserted.id,
+    createdAt: inserted.created_at,
+    data: cleanedData,
+  });
+
+  return res.status(200).json({
+    ok: true,
+    id: inserted.id,
+    created_at: inserted.created_at,
+    side_effects: sideEffects,
+  });
+}
+
+async function runSideEffects({ id, createdAt, data }) {
+  const result = { email: null, sheets: null };
+
+  // PDF é gerado uma vez e reutilizado pelo email; se quiser disponibilizar pra download
+  // direto no futuro, dá pra subir pro Vercel Blob aqui.
+  let pdfBuffer = null;
+  try {
+    pdfBuffer = await generateDiagnosticoPDF({ id, createdAt, data });
+  } catch (err) {
+    console.error('[submit] geração de PDF falhou:', err);
+    result.email = { ok: false, error: 'pdf_failed: ' + err.message };
+  }
+
+  if (pdfBuffer) {
+    try {
+      await sendDiagnosticoEmail({ id, data, pdfBuffer });
+      result.email = { ok: true };
+    } catch (err) {
+      console.error('[submit] envio de email falhou:', err);
+      result.email = { ok: false, error: err.message };
+    }
+  }
+
+  try {
+    await appendRow({ id, createdAt, data });
+    result.sheets = { ok: true };
+  } catch (err) {
+    console.error('[submit] append no Sheets falhou:', err);
+    result.sheets = { ok: false, error: err.message };
+  }
+
+  return result;
 }
