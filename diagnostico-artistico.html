@@ -544,6 +544,51 @@
     line-height: 1.7;
   }
 
+  /* Footer / créditos */
+  .credits {
+    position: relative;
+    z-index: 1;
+    margin: 80px auto 0;
+    padding: 40px 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .credits-logo {
+    display: block;
+    height: 28px;
+    width: auto;
+    margin: 0 auto 16px;
+    opacity: 0.85;
+    filter: invert(86%) sepia(15%) saturate(700%) hue-rotate(5deg) brightness(95%);
+  }
+
+  .credits-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .credits a {
+    color: var(--text-dim);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border-hover);
+    padding-bottom: 1px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .credits a:hover {
+    color: var(--gold-light);
+    border-color: var(--gold);
+  }
+
   /* Yes/No toggle */
   .toggle-group {
     display: flex;
@@ -1436,6 +1481,13 @@
     <h2>Diagnóstico enviado!</h2>
     <p>Suas respostas chegaram. Em breve entraremos em contato para apresentar sua estratégia personalizada de carreira.</p>
   </div>
+
+  <!-- CRÉDITOS -->
+  <footer class="credits">
+    <img src="/favicon.png" alt="Giovanni Feghalli" class="credits-logo">
+    <div class="credits-name">Feito por Giovanni Feghalli</div>
+    <div><a href="https://wa.me/5598981235512" target="_blank" rel="noopener">Entre em contato</a></div>
+  </footer>
 
 </div>
 
