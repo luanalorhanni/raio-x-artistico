@@ -25,9 +25,9 @@
 //      clica em Advanced → Go to ... → Allow)
 // 7. Copia a "Web app URL" que aparece (algo como
 //    https://script.google.com/macros/s/AKfyc.../exec)
-// 8. Manda pra Claude:
-//    - O SECRET que você definiu (a string aleatória do item 4)
-//    - A Web app URL do item 7
+// 8. Guarde os dois valores para configurar as env vars do projeto:
+//    - SHEETS_WEBHOOK_SECRET: o SECRET que você definiu (item 4)
+//    - SHEETS_WEBHOOK_URL: a Web app URL do item 7
 
 const SECRET = 'TROCAR_PARA_UMA_STRING_ALEATORIA';
 const SHEET_NAME = 'Respostas';

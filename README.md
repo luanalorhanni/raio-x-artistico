@@ -30,9 +30,9 @@ Provisionado via Vercel Marketplace. `DATABASE_URL` injetada automaticamente. Sc
 1. No Vercel dashboard do projeto → **Storage** (ou **Integrations**) → **Add Integration** → **Resend** → segue o fluxo.
 2. Isso injeta `RESEND_API_KEY` automaticamente.
 3. Por padrão o sender é `onboarding@resend.dev` (funciona out-of-the-box, mas limita destinatário). Pra produção, no dashboard da Resend:
-   - **Domains** → adiciona um domínio próprio (ex: `feghalli.com`)
+   - **Domains** → adiciona um domínio próprio (ex: `seudominio.com`)
    - Configura DNS (TXT/MX/DKIM)
-   - Define env var `RESEND_FROM` no Vercel, ex: `Raio X Artístico <noreply@feghalli.com>`
+   - Define env var `RESEND_FROM` no Vercel, ex: `Raio X Artístico <noreply@seudominio.com>`
 
 ### 3. Google Sheets (via Apps Script — sem GCP)
 
@@ -62,7 +62,7 @@ A planilha é o próprio "backend" via Apps Script Web App. Não precisa de Goog
 | `DATABASE_URL` | Neon (Marketplace) | Sim |
 | `RESEND_API_KEY` | Resend (Marketplace) | Pra email |
 | `RESEND_FROM` | manual | Opcional (default `onboarding@resend.dev`) |
-| `NOTIFY_EMAIL` | manual | Opcional (default `REDACTED_EMAIL`) |
+| `NOTIFY_EMAIL` | manual | **Obrigatória** — endereço que recebe a notificação de cada envio |
 | `SHEETS_WEBHOOK_URL` | manual (Apps Script) | Pra sheets |
 | `SHEETS_WEBHOOK_SECRET` | manual | Pra sheets |
 
@@ -98,3 +98,11 @@ npx vercel dev
 3. Acrescenta o campo (e o label) em `lib/fields.js` na seção certa.
 
 Os outros canais (PDF/email/Sheets) puxam de `fields.js` automaticamente.
+
+## Privacidade
+
+Nenhum dado de respondente é versionado neste repositório — as submissões vivem apenas no Neon Postgres e na planilha do cliente. Todas as credenciais (`DATABASE_URL`, `RESEND_API_KEY`, `SHEETS_WEBHOOK_SECRET`, `NOTIFY_EMAIL`) vêm de variáveis de ambiente, sem valores default no código.
+
+## Licença
+
+[MIT](LICENSE) — código de autoria de Luana Lorhanni. A identidade visual e a marca "Raio X Artístico" pertencem ao cliente e não estão cobertas pela licença.
